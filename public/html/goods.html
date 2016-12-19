@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="maximum-scale=1.0,minimum-scale=1.0,user-scalable=0,width=device-width,initial-scale=1.0" />
+    <title>商城</title>
+    <link rel="stylesheet" href="../css/index.css" />
+    <script src="../js/flexible.js"></script>
+    <script src="../js/vue.min.js"></script>
+    <script src="../js/underscore1.8.3.min.js"></script>
+    <script src="../js/alloy_finger.js"></script>
+    <script src="../js/jquery3.min.js"></script>
+</head>
+
+<body v-bind:class="{ 'active': isNavOpenStatus }" id="goods">
+    <div class="xHeader">
+        <div class="left"><i class="iconfont icon-left"></i>返回</div>
+        <div class="middle">商城</div>
+        <div class="right"><i class="iconfont icon-shenglve"></i></div>
+    </div>
+
+    <div class="goodsNav">
+    	<ul class="sort">
+    		<li v-for="el in navStatus" v-bind:class="{ 'active': navStatusCurrent==$index }" @click="changeNavStatus($index)">{{el}}</li>
+    	</ul>
+    	<h2>商品品类</h2>
+
+    	<!-- 一级导航 -->
+    	<ul class="nav">
+    		<li v-for="el in sort" v-bind:class="{ 'active': sortCurrent==$index }" @click="changeNav($index,0)" v-if="(navStatusCurrent==0&&el.isProm)||(navStatusCurrent==1&&el.isNew)||(navStatusCurrent==2)"><img :src="el.picUrl">{{el.sName}}</li>
+    	</ul>
+    </div>
+
+	<header class="homeTop">
+		<div class="btnNoframe" @click="toggleStatusH"><i class="iconfont icon-unie63a"></i>分类</div>
+
+        <!-- 搜索框 -->
+		<div class="searchBar">
+            <input type="text" placeholder="搜索商品关键字" v-model="keyword">
+            <div class="btn"><i class="iconfont icon-search"></i></div>
+        </div>
+
+	</header>
+
+    <div class="goodsArea">
+    	<!-- 二级导航 -->
+        <ul class="goodsSubnav">
+            <li v-for="el in sort[sortCurrent].list" v-bind:class="{ 'active': sortSubCurrent==$index }" @click="changeNav(sortCurrent,$index)" track-by="$index">{{el}}</li>
+        </ul>
+        <ul class="goodList" v-cloak>
+            <li v-for="el in list| filterBy keyword in 'pName' " class="clearfix" >
+                <div class="pic" @click="openWin($index);"><img :src="el.picUrl"></div>
+                <div class="con">
+                    <div class="pname">{{el.pName}}</div>
+                    <div class="feather">{{el.pFeather}}</div>
+                    <div class="store">库存:{{el.store}}</div>
+                    <div class="price">￥<big>{{el.price}}</big></div>
+
+                    <div class="numbox">
+                        <i class="iconfont icon-jianhao" @click.stop="minusH($index)"></i>
+                        <div class="number">
+                            <span class="fly" transition="flyDown" v-if="idMinus == $index">-1</span>
+                            <span class="fly" transition="flyUp" v-if="idPlus == $inldex">+1</span>
+                            <span class="sum">{{el.sum}}</span>
+                        </div>
+                        <i class="iconfont icon-jiahao" @click.stop="plusH($index)"></i>
+                    </div>
+                    
+                </div>
+            </li>
+        </ul>
+    </div>
+    <!-- 底部 -->
+    <div class="barBottom" v-cloak>
+        <div class="fl">
+            共<big>{{orderTotal}}</big>件商品 合计:￥
+            <big>{{moneyTotal}}</big>
+        </div>
+        <div class="fr">
+            <a href="pay.html" class="btnRect">去结算</a>
+        </div>
+    </div>
+</body>
+
+</html>
+<script>
+vm = new Vue({
+    el: 'html',
+    data: {
+        keyword:"",
+        isNavOpenStatus: false, //当前一级导航是否打开
+        navStatusCurrent:2,	//主导航当前状态
+        sortCurrent:1,	//一级品类
+        sortSubCurrent:0,	//二级品类
+        navStatus:["促销","新品","全部"],
+        sort:[
+        	{
+        		isProm:true,isNew:false,sName:"啤酒",picUrl:"../images/c1.jpg",
+        		list:["最近购买","百威系列","雪津系列","红石梁系列","维雪系列","大雪系列","晓雪系列","花河系列"]
+        	},{
+        		isProm:false,isNew:false,sName:"红酒",picUrl:"../images/c2.jpg",
+        		list:["最近购买","红酒系列1","红酒系列2","红酒系列3","红酒系列4"]
+        	},{
+        		isProm:true,isNew:true,sName:"碳酸饮料",picUrl:"../images/c3.jpg",
+        		list:["最近购买","碳酸系列1","碳酸系列2","碳酸系列3"]
+        	},{
+        		isProm:false,isNew:true,sName:"乳制品",picUrl:"../images/c1.jpg",
+        		list:["最近购买","乳制品系列","乳制品系列"]
+        	},{
+        		isProm:false,isNew:true,sName:"其它类别",picUrl:"../images/c2.jpg",
+        		list:["最近购买"]
+        	}
+        ],
+        list: [{
+            "pid": "56ab10162e958a0051a44c9d",
+            "sum": 0,
+            "pName": "百威精酿啤酒罐装330ml",
+            "pFeather": "规格:12罐/箱",
+            "store": 166,
+            "picUrl": "../images/c1.jpg",
+            "price": 50.00
+        }, {
+            "pid": "56ab10162e958a0051a44c9d",
+            "sum": 0,
+            "pName": "白沙精酿啤酒精酿啤酒罐装330ml",
+            "pFeather": "规格:12罐罐罐罐罐/箱",
+            "store": 16666,
+            "picUrl": "../images/c2.jpg",
+            "price": 120.00
+        },{
+            "pid": "56ab10162e958a0051a44c9d",
+            "sum": 0,
+            "pName": "百威精酿啤酒罐装330ml",
+            "pFeather": "规格:12罐/箱",
+            "store": 166,
+            "picUrl": "../images/c3.jpg",
+            "price": 20.00
+        },{
+            "pid": "56ab10162e958a0051a44c9d",
+            "sum": 0,
+            "pName": "百威精酿啤酒罐装330ml",
+            "pFeather": "规格:12罐/箱",
+            "store": 166,
+            "picUrl": "../images/c1.jpg",
+            "price": 10.00
+        },{
+            "pid": "56ab10162e958a0051a44c9d",
+            "sum": 0,
+            "pName": "沙沙230ml",
+            "pFeather": "规格:12罐/箱",
+            "store": 166,
+            "picUrl": "../images/c1.jpg",
+            "price": 5.00
+        },]
+    },
+    computed: {
+    	// 总金额
+        moneyTotal: function() {
+            return _.reduce(this.list, function(final, v) {
+                return final + v.sum * v.price;
+            }, 0);
+        },
+
+        // 订购商品总数量
+        orderTotal: function () {
+          return _.reduce(this.list, function(sum, v){ return sum + v.sum; }, 0);
+        }
+    },
+    methods: {
+        minusH: function(n) {
+            this.list[n].sum = (this.list[n].sum > 0) ? this.list[n].sum - 1 : 0;
+        },
+        plusH: function(n) {
+            this.list[n].sum = (this.list[n].sum < 99999) ? this.list[n].sum + 1 : this.list[n].sum;
+        },
+
+        //切换 促销、新品、全部三种状态
+        changeNavStatus: function(n) {
+        	console.log(n);
+            this.navStatusCurrent=n;
+        },
+
+        // 切换二级目录
+        changeNav: function(A,B) {
+            this.sortCurrent=A;
+            this.sortSubCurrent=B;
+        },
+
+        // 是否显示一级目录
+        toggleStatusH: function() {
+            this.isNavOpenStatus = !this.isNavOpenStatus;
+        }
+    }
+});
+
+
+
+var gesture = new AlloyFinger(document.getElementById("goods"), {
+    swipe: function(evt) {
+        
+        if (evt.direction == "Left" ) {
+            console.log('ddd');
+            vm.isNavOpenStatus=false;
+        }
+
+        if (evt.direction == "Right" ) {
+            vm.isNavOpenStatus=true;
+        }
+    }
+
+});
+
+
+$(function(){
+    var $searchBar = $('#searchBar'),
+        $searchResult = $('#searchResult'),
+        $searchText = $('#searchText'),
+        $searchInput = $('#searchInput'),
+        $searchClear = $('#searchClear'),
+        $searchCancel = $('#searchCancel');
+
+    function hideSearchResult(){
+        $searchResult.hide();
+        $searchInput.val('');
+    }
+    function cancelSearch(){
+        hideSearchResult();
+        $searchBar.removeClass('weui-search-bar_focusing');
+        $searchText.show();
+    }
+
+    $searchText.on('click', function(){
+        $searchBar.addClass('weui-search-bar_focusing');
+        $searchInput.focus();
+    });
+    $searchInput
+        .on('blur', function () {
+            if(!this.value.length) cancelSearch();
+        })
+        .on('input', function(){
+            if(this.value.length) {
+                $searchResult.show();
+            } else {
+                $searchResult.hide();
+            }
+        })
+    ;
+    $searchClear.on('click', function(){
+        hideSearchResult();
+        $searchInput.focus();
+    });
+    $searchCancel.on('click', function(){
+        cancelSearch();
+        $searchInput.blur();
+    });
+});
+</script>
